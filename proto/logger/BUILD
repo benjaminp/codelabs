@@ -4,4 +4,16 @@
 # load("@rules_java//java:defs.bzl", "java_proto_library")
 # load("@rules_proto//proto:defs.bzl", "proto_library")
 
+load("//proto:ts_proto_library.bzl", "ts_proto_library")
+
 package(default_visibility = ["//visibility:public"])
+
+proto_library(
+    name = "logger_proto",
+    srcs = ["logger.proto"],
+)
+
+ts_proto_library(
+    name = "logger_ts_proto",
+    proto = ":logger_proto",
+)

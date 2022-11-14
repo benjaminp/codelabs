@@ -100,25 +100,64 @@ go_repository(
 
 
 # BEGIN: Typescript dependencies
-# http_archive(
-#     name = "build_bazel_rules_nodejs",
-#     urls = [
-#         "https://github.com/bazelbuild/rules_nodejs/releases/download/0.35.0/rules_nodejs-0.35.0.tar.gz",
-#     ],
-#     sha256 = "6625259f9f77ef90d795d20df1d0385d9b3ce63b6619325f702b6358abb4ab33",
-# )
+http_archive(
+    name = "aspect_rules_js",
+    sha256 = "99657daed85eb5e764663fc2a534d4488b3b157719d9ddc64fbac0fd4510b677",
+    strip_prefix = "rules_js-1.6.8",
+    url = "https://github.com/aspect-build/rules_js/archive/refs/tags/v1.6.8.tar.gz",
+)
 
-# load("@build_bazel_rules_nodejs//:defs.bzl", "node_repositories", "yarn_install")
+load("@aspect_rules_js//js:repositories.bzl", "rules_js_dependencies")
 
-# yarn_install(
-#     name = "npm",
-#     package_json = "//typescript:package.json",
-#     yarn_lock = "//typescript:yarn.lock",
-# )
+rules_js_dependencies()
 
-# load("@npm//:install_bazel_dependencies.bzl", "install_bazel_dependencies")
-# install_bazel_dependencies()
+load("@rules_nodejs//nodejs:repositories.bzl", "DEFAULT_NODE_VERSION", "nodejs_register_toolchains")
 
-# load("@npm_bazel_typescript//:index.bzl", "ts_setup_workspace")
-# ts_setup_workspace()
+nodejs_register_toolchains(
+    name = "nodejs",
+    node_version = DEFAULT_NODE_VERSION,
+)
+
+load("@aspect_rules_js//npm:npm_import.bzl", "npm_translate_lock")
+
+npm_translate_lock(
+    name = "npm",
+    pnpm_lock = "//:pnpm-lock.yaml",
+    verify_node_modules_ignored = "//:.bazelignore",
+)
+
+load("@npm//:repositories.bzl", "npm_repositories")
+
+npm_repositories()
+
+http_archive(
+    name = "aspect_rules_ts",
+    sha256 = "1ed2dc702b3d5fcf2b8e6ca4a5dae23fbc8e5570643d2a5cf8f5f09c7c44bc15",
+    strip_prefix = "rules_ts-1.0.0-rc6",
+    url = "https://github.com/aspect-build/rules_ts/archive/refs/tags/v1.0.0-rc6.tar.gz",
+)
+
+load("@aspect_rules_ts//ts:repositories.bzl", "LATEST_VERSION", "rules_ts_dependencies")
+
+rules_ts_dependencies(ts_version = LATEST_VERSION)
+
+http_archive(
+    name = "aspect_rules_webpack",
+    sha256 = "828e1497c9ad993d57bf9aa6661bda1a587048b39715a35079e18a3e31ca210c",
+    strip_prefix = "rules_webpack-0.5.2",
+    url = "https://github.com/aspect-build/rules_webpack/archive/refs/tags/v0.5.2.tar.gz",
+)
+
+load("@aspect_rules_webpack//webpack:dependencies.bzl", "rules_webpack_dependencies")
+
+rules_webpack_dependencies()
+
+load("@aspect_rules_webpack//webpack:repositories.bzl", "webpack_repositories")
+
+webpack_repositories(name = "webpack")
+
+load("@webpack//:npm_repositories.bzl", webpack_npm_repositories = "npm_repositories")
+
+webpack_npm_repositories()
+
 # END: Typescript dependencies
